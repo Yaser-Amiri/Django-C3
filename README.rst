@@ -16,6 +16,10 @@ Quick start
     ]
 
 
-3. Add "C3_IMPORT = False" to setting.py if you want import C3 javascript libraries by yourself.
+2. Add "C3_IMPORT = False" to setting.py if you want import C3 javascript libraries by yourself.
+
+Output example:
 
 .. image:: screenshot.png
+
+There is "demo" directory in github repository (a compelete django project), you can see it to see a real example.
