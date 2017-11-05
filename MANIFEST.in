@@ -1,0 +1,4 @@
+include LICENSE
+include README.rst
+recursive-include django_c3/static *
+recursive-include django_c3/templates *

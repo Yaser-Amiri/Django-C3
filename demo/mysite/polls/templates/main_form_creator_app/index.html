@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load c3 %}
+
+{% block body %}
+<div class="row">
+  <div class="col s6">
+    <div id="chart-1"></div>
+  </div>
+  <div class="col s6">
+    <div id="chart-2"></div>
+  </div>
+  <div class="col s6">
+    <div id="chart-3"></div>
+  </div>
+  <div class="col s6">
+    <div id="chart-4"></div>
+  </div>
+  <div class="col s12">
+    <div id="chart-5"></div>
+  </div>
+  <div class="col s12">
+    <div id="chart-6"></div>
+  </div>
+</div>
+
+  {% step '#chart-3' step0 'Test Step Chart' True True True horizontal_grid_line=True zoom=True %}
+  {% pie '#chart-1' pie0 "Pie Test Chart" %}
+  {% line '#chart-2' line0 'Line Chart Title' angle=False x_is_category=True %}
+  {% line_xy '#chart-6' xy angle=False group_tooltip=False labels=True show_points=False %}
+  {% donut '#chart-4' donut0 'donut chart' 'innet' show_legend=False %}
+  {% bar '#chart-5' bar0 'Bar chart' column_width=10 x_is_category=True group_tooltip=False labels=True vertical_grid_line=True horizontal_grid_line=True %}
+
+{% endblock body %}
