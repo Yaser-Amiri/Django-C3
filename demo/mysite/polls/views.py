@@ -57,7 +57,7 @@ def main(request):
     }
 
     return render(
-        request, 'main_form_creator_app/index.html', {
+        request, 'polls/index.html', {
             'bar0': bar, 'pie0': pie, 'step0': step,
             'donut0': donut, 'line0': line, 'xy': xy}
     )
