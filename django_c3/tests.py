@@ -984,3 +984,290 @@ class LineChartTest(SimpleTestCase):
             ('["2d2014226823e74c2accfcce8e0ca141",'
             '\'2017-5-19\',\'2017-5-20\',\'2017-5-21\',\'2017-5-22\']') in
             rendered_template)
+
+###############################################################################
+
+
+class GaugeSingleColumnChartTest(SimpleTestCase):
+    """ Tests single column, half circle with color pattern """
+
+    def setUp(self):
+        self.gauge_chart_data = {
+            'data': [
+                {'title': 'A', 'value': 91.4,
+                 },
+            ],
+            'color':
+                {'pattern': ['#FF0000', '#F97600', '#F6C600', '#60B044'],
+                 'threshold': [30, 60, 90, 100]
+                 }
+        }
+
+        self.context = Context({'gauge_chart': self.gauge_chart_data})
+
+        self.tag_arguments = {
+            'bind_element': '#chart',
+            'title': 'gauge-chart',
+            'labels': True,
+            'show_legend': True,
+            'min': 0,
+            'max': 100,
+            'thickness': 50,
+            'height': None,
+            'full_circle': False,
+            'starting_angle': None,
+            'interaction': None
+        }
+
+        self.template = (
+            '{%% load c3 %%}'
+            '{%% gauge "%(bind_element)s" '
+            'gauge_chart title="%(title)s" '
+            'labels=%(labels)s '
+            'show_legend=%(show_legend)s '
+            'min=%(min)s max=%(max)s thickness=%(thickness)s '
+            'height=%(height)s '
+            'full_circle=%(full_circle)s starting_angle=%(starting_angle)s '
+            'interaction=%(interaction)s %%}'
+        )
+
+    def test_bind_element(self):
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        bind_to_rgx = r'bindto:\s+"%s"' % self.tag_arguments['bind_element']
+        self.assertRegex(rendered_template, bind_to_rgx)
+
+    def test_data(self):
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        self.assertRegex(rendered_template, r'columns:\s\[\s+\[\"A\",\s91.4\],\s+\]')
+
+    def test_pattern_colors(self):
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        self.assertRegex(rendered_template, r"pattern:\s\['#FF0000',\s'#F97600',\s'#F6C600',\s'#60B044'\]")
+
+    def test_pattern_threshold(self):
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        self.assertRegex(rendered_template, r'values:\s\[30,\s60,\s90,\s100\]')
+
+    def test_chart_title(self):
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'title: {text: "%s"}' % 'gauge-chart'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_labels_true(self):
+        self.tag_arguments['labels'] = True
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'show:\strue\s//\sto turn off the min/max labels.'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_labels_false(self):
+        self.tag_arguments['labels'] = False
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'show:\sfalse\s//\sto turn off the min/max labels.'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_legend_true(self):
+        self.tag_arguments['show_legend'] = True
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'legend: {show: true}'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_legend_false(self):
+        self.tag_arguments['show_legend'] = False
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'legend: {show: false}'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_min(self):
+        self.tag_arguments['min'] = 0
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'min: 0'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_max(self):
+        self.tag_arguments['max'] = 100
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'max: 100'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_thickness(self):
+        self.tag_arguments['width'] = 50
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'width: 50'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_height(self):
+        self.tag_arguments['height'] = 250
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'size:\s{\n\s+height:\s250,\n\s+}'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_full_circle_false(self):
+        self.tag_arguments['full_circle'] = False
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'gauge:\s{\n\s+fullCircle:\sfalse'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_starting_angle(self):
+        self.tag_arguments['full_circle'] = None
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'startingAngle:\sundefined'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_interactions_true(self):
+        self.tag_arguments['interaction'] = True
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'interaction:\s{\senabled:\strue}'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_interactions_false(self):
+        self.tag_arguments['interaction'] = False
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'interaction:\s{\senabled:\sfalse}'
+        self.assertRegex(rendered_template, rgx)
+
+###############################################################################
+
+
+class GaugeMultiColumnChartTest(SimpleTestCase):
+    """ Tests multi-column, half circle with column specific colors """
+
+    def setUp(self):
+        self.gauge_chart_data = {
+            'data': [
+                {'title': 'A', 'value': 65.7,
+                 'color': '#FF8C00'
+                 },
+                {'title': 'B', 'value': 42.3,
+                 'color': '#F6C600'
+                 },
+            ],
+        }
+
+        self.context = Context({'gauge_chart': self.gauge_chart_data})
+
+        self.tag_arguments = {
+            'bind_element': '#chart',
+            'title': 'gauge-chart',
+            'labels': True,
+            'show_legend': True,
+            'min': 0,
+            'max': 100,
+            'thickness': 50,
+            'height': None,
+            'full_circle': False,
+            'starting_angle': None,
+            'interaction': None
+        }
+
+        self.template = (
+            '{%% load c3 %%}'
+            '{%% gauge "%(bind_element)s" '
+            'gauge_chart title="%(title)s" '
+            'labels=%(labels)s '
+            'show_legend=%(show_legend)s '
+            'min=%(min)s max=%(max)s thickness=%(thickness)s '
+            'height=%(height)s '
+            'full_circle=%(full_circle)s starting_angle=%(starting_angle)s '
+            'interaction=%(interaction)s %%}'
+        )
+
+    def test_data(self):
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        self.assertRegex(rendered_template, r'columns:\s\[\s+\[\"A\",\s65.7\],\s+\[\"B\",\s42.3\],\s+\]')
+
+    def test_colors(self):
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        self.assertRegex(rendered_template, r'colors:\s{\s+\"A\":\s\"#FF8C00\",\s+\"B\":\s\"#F6C600\",\s+\}')
+
+    def test_full_circle_false(self):
+        self.tag_arguments['full_circle'] = False
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'gauge:\s{\n\s+fullCircle:\sfalse'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_starting_angle(self):
+        self.tag_arguments['full_circle'] = None
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'startingAngle:\sundefined'
+        self.assertRegex(rendered_template, rgx)
+
+###############################################################################
+
+
+class GaugeFullCircleChartTest(SimpleTestCase):
+    """ Tests full circle gauge chart """
+
+    def setUp(self):
+        self.gauge_chart_data = {
+            'data': [
+                {'title': 'A', 'value': 91.4,
+                 },
+            ],
+            'color':
+                {'pattern': ['#FF0000', '#F97600', '#F6C600', '#60B044'],
+                 'threshold': [30, 60, 90, 100]
+                 }
+        }
+
+        self.context = Context({'gauge_chart': self.gauge_chart_data})
+
+        self.tag_arguments = {
+            'bind_element': '#chart',
+            'title': 'gauge-chart',
+            'labels': True,
+            'show_legend': True,
+            'min': 0,
+            'max': 100,
+            'thickness': 50,
+            'height': None,
+            'full_circle': True,
+            'starting_angle': '6.28',
+            'interaction': None
+        }
+
+        self.template = (
+            '{%% load c3 %%}'
+            '{%% gauge "%(bind_element)s" '
+            'gauge_chart title="%(title)s" '
+            'labels=%(labels)s '
+            'show_legend=%(show_legend)s '
+            'min=%(min)s max=%(max)s thickness=%(thickness)s '
+            'height=%(height)s '
+            'full_circle=%(full_circle)s starting_angle=%(starting_angle)s '
+            'interaction=%(interaction)s %%}'
+        )
+
+    def test_full_circle_false(self):
+        self.tag_arguments['full_circle'] = True
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'gauge:\s{\n\s+fullCircle:\strue'
+        self.assertRegex(rendered_template, rgx)
+
+    def test_starting_angle(self):
+        self.tag_arguments['full_circle'] = None
+        self.template_to_render = Template(self.template % self.tag_arguments)
+        rendered_template = self.template_to_render.render(self.context)
+        rgx = r'startingAngle:\s6.28'
+        self.assertRegex(rendered_template, rgx)

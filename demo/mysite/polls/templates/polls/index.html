@@ -21,6 +21,15 @@
   <div class="col s12">
     <div id="chart-6"></div>
   </div>
+  <div class="col s4">
+      <div id="chart-7"></div>
+  </div>
+  <div class="col s4">
+      <div id="chart-8"></div>
+  </div>
+  <div class="col s4">
+      <div id="chart-9"></div>
+  </div>
 </div>
 
   {% step '#chart-3' step0 'Test Step Chart' True True True horizontal_grid_line=True zoom=True %}
@@ -29,5 +38,8 @@
   {% line_xy '#chart-6' xy angle=False group_tooltip=False labels=True show_points=False %}
   {% donut '#chart-4' donut0 'donut chart' 'innet' show_legend=False %}
   {% bar '#chart-5' bar0 'Bar chart' column_width=10 x_is_category=True group_tooltip=False labels=True vertical_grid_line=True horizontal_grid_line=True %}
+  {% gauge '#chart-7' gauge0 'Gauge Chart' %}
+  {% gauge '#chart-8' gauge1 'Gauge Chart w/ Multiple Columns' show_legend=True %}
+  {% gauge '#chart-9' gauge2 'Full Circle Gauge Chart' labels=False show_legend=True full_circle=True starting_angle='2 * Math.PI' %}
 
 {% endblock body %}

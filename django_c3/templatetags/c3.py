@@ -31,7 +31,7 @@ def import_c3():
     import_c3_css = '<link type="text/css" rel="stylesheet" href="%s"/>' \
         % static('django_c3/css/c3.min.css')
     import_js_d3 = '<script type="text/javascript" src="%s"></script>' % \
-        static('django_c3/js/d3.v3.min.js')
+        static('django_c3/js/d3.v5.min.js')
     import_js_c3 = '<script type="text/javascript" src="%s"></script>' % \
         static('django_c3/js/c3.min.js')
 
@@ -58,15 +58,14 @@ def step(
                 informations about extra lines, grouping of data and
                 chart axis labels. eg:
                 {
-                    'x': ['2017-5-19', '2017-5-20', '2017-5-21', '2017-5-22'],
-                    'horizontal_lines': [40],
-                    # 'vertical_lines': [40],
                     'data': [
-                        {'title': 'A', 'values': [26, 35, 52, 34, 45, 74],
-                            'color': '#FF34FF'},
-                        # {'title': 'B', 'values': [54, 25, 52, 26, 20, 89]},
+                        {'title': 'A', 'value': 91.4,
+                         },
                     ],
-                    # 'groups': [('A', 'B')]
+                    'color':
+                        {'pattern': ['#FF0000', '#F97600', '#F6C600', '#60B044'],
+                         'threshold': [30, 60, 90, 100]
+                         }
                 }
                 vertical_lines works just if x_is_category seted to False.
             title: A string that will be shown on top of the chart.
@@ -1125,6 +1124,182 @@ def donut(
     # add import C3 elements to it, if it does not imported yet and return it.
     if not ('import_js_c3' in context and context['import_js_c3']):
         context['import_js_c3'] = True
+        return mark_safe('%s\n%s' % (import_c3(), chart))
+    else:
+        return mark_safe(chart)
+
+###############################################################################
+
+
+@register.simple_tag(takes_context=True)
+def gauge(context, bind_to, data, title='', labels=True, show_legend=False, min=0,
+          max=100, thickness=50, height=None, full_circle=False,
+          starting_angle=None, interaction=True):
+
+    """Generates javascript code to show a 'gauge' chart.
+
+        Args:
+            context: Context of template.
+            bind_to: A string that specifics an HTML element (eg: id or class)
+                that chart will be shown in that. (like: '#chart')
+            data: It is dictionary that contains data of chart, color patterns,
+            grouping of data and chart labels. eg:
+                {
+                    'x': ['2017-5-19', '2017-5-20', '2017-5-21', '2017-5-22'],
+                    'horizontal_lines': [40],
+                    # 'vertical_lines': [40],
+                    'data': [
+                        {'title': 'A', 'values': [26, 35, 52, 34, 45, 74],
+                            'color': '#FF34FF'},
+                        # {'title': 'B', 'values': [54, 25, 52, 26, 20, 89]},
+                    ],
+                    # 'groups': [('A', 'B')]
+                }
+                vertical_lines works just if x_is_category seted to False.
+            title: String - Displayed on top of the chart.
+            labels: Boolean - If true, min/max values will be displayed.
+            show_legend: Boolean - If false, legends of the chart will be hidden.
+            min: Decimal - Sets minimum value for chart (can be negative).
+            max: Decimal - Sets maximum value for chart.
+            thickness: Decimal - Set's thickness of arc.
+            height: Integer - Determines height of chart in pixels.
+            full_circle:  Boolean - If true, displays full circle.
+            starting_angle: Decimal - Sets starting angle.
+            interaction: Boolean - If true, enables selection and mouse events.
+
+    Returns:
+        A string contains chart js code and import code of C3 static files, if
+        it did not imported yet.
+        You can see structure of chart in chart_structur variable.
+    """
+
+    # gauge chart structure in JS
+    chart_structur = (
+
+        '\n<script type="text/javascript">'
+        '\n    var chart = c3.generate({'
+        '\n        bindto: "%s",'
+        '\n        data: {'
+        '\n            columns: [ %s ],'
+        '\n            colors: { %s },'
+        '\n            type: "gauge",'
+        '\n        },'
+        '\n           gauge: {'''
+        '\n             fullCircle: %s,'
+        '\n             startingAngle: %s,'
+        '\n             label: {'
+        '\n                 format: function(value, ratio) {'
+        '\n                     return value + "%%";'
+        '\n                 },'
+        '\n                 extents: function (value, isMax) {'
+        '\n                     return value + "%%";'
+        '\n                 },'
+        '\n                 show: %s // to turn off the min/max labels.'
+        '\n             },'
+        '\n             min: %s, // 0 is default,' 
+        '\n             max: %s, // 100 is default'
+        '\n             //units: "%%",'
+        '\n             width: %s, // for adjusting arc thickness'
+        '\n             expand: true'
+        '\n         },'
+        '\n         size: {'
+        '\n             height: %s,'
+        '\n         },'
+        '\n         title: {text: "%s"},'
+        '\n         legend: {show: %s},'
+        '\n         interaction: { enabled: %s},'
+        '\n         color: {'
+        '\n             pattern: %s,'
+        '\n             threshold: {'
+        '\n                 unit: "value",'
+        '\n                 max: "%s",'
+        '\n                 values: %s'
+        '\n             }'
+        '\n         },'        
+        '\n     });'
+        '\n </script>'
+    )
+
+    # convert parameters to string to be acceptable in JS and C3 syntax.
+
+    if full_circle:
+        full_circle = 'true'
+    else:
+        full_circle = 'false'
+
+    if starting_angle is not None:
+        starting_angle = starting_angle
+    else:
+        starting_angle = 'undefined'
+
+    if interaction:
+        interaction = 'true'
+    else:
+        interaction = 'false'
+
+    if labels:
+        labels = 'true'
+    else:
+        labels = 'false'
+
+    if show_legend:
+        show_legend = 'true'
+    else:
+        show_legend = 'false'
+
+    if min is not None:
+        min = int(min)
+    else:
+        min = 'null'
+
+    if max is not None:
+        max = int(max)
+    else:
+        max = 'null'
+
+    if thickness is not None:
+        thickness = int(thickness)
+    else:
+        thickness = 'null'
+
+    if height is not None:
+        height = int(height)
+    else:
+        height = 'null'
+
+    # read records points to draw on chart
+    chart_data = str()
+    for item in data['data']:
+        item_data = '["%s", %s], ' % (item['title'], item['value'])
+        chart_data = ' '.join([chart_data, item_data])
+
+    # read colors of data
+    chart_color = str()
+    for item in data['data']:
+        if 'color' in item.keys():
+            item_color = '"%s": "%s", ' % (item['title'], item['color'])
+            chart_color = ' '.join([chart_color, item_color])
+
+    # read color patterns
+    if 'color' in data:
+        if 'pattern' in data['color']:
+            pattern = data['color']['pattern']
+        else:
+            pattern = []
+        if 'threshold' in data['color']:
+            threshold = data['color']['threshold']
+        else:
+            threshold = []
+    else:
+        pattern = threshold = []
+
+    # pass arguments to chart structure
+    chart = chart_structur % (
+        bind_to, chart_data, chart_color, full_circle, starting_angle, labels, min, max,
+        thickness, height, title, show_legend, interaction, pattern, max, threshold
+    )
+    # add import C3 elements to it, if it does not imported yet and return it.
+    if not ('import_js_c3' in context and context['import_js_c3']):
         return mark_safe('%s\n%s' % (import_c3(), chart))
     else:
         return mark_safe(chart)

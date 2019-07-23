@@ -56,8 +56,39 @@ def main(request):
         # 'groups': [('A', 'B')]
     }
 
+    gauge0 = {
+        'data': [
+            {'title': 'A', 'value': 91.4,
+             'color': '#FF8C00'
+             },
+        ],
+    }
+
+    gauge1 = {
+        'data': [
+            {'title': 'A', 'value': 65.7,
+             'color': '#FF8C00'
+             },
+            {'title': 'B', 'value': 42.3,
+             'color': '#F6C600'
+             },
+        ],
+    }
+
+    gauge2 = {
+        'data': [
+            {'title': 'A', 'value': 91.4,
+             },
+        ],
+        'color':
+            {'pattern': ['#FF0000', '#F97600', '#F6C600', '#60B044'],
+             'threshold': [30, 60, 90, 100]
+             }
+    }
+
     return render(
         request, 'polls/index.html', {
             'bar0': bar, 'pie0': pie, 'step0': step,
-            'donut0': donut, 'line0': line, 'xy': xy}
+            'donut0': donut, 'line0': line, 'xy': xy,
+            'gauge0': gauge0, 'gauge1': gauge1, 'gauge2': gauge2}
     )
